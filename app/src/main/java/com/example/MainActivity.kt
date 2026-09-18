@@ -58,6 +58,9 @@ fun SmartAmbulanceWebView(modifier: Modifier = Modifier) {
                         ViewGroup.LayoutParams.MATCH_PARENT
                     )
                     setBackgroundColor(android.graphics.Color.parseColor("#0B111E"))
+                    // Avoid Mesa GPU rendernode open failure in emulator/container environments
+                    setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
+
                     settings.apply {
                         javaScriptEnabled = true
                         domStorageEnabled = true
@@ -66,9 +69,23 @@ fun SmartAmbulanceWebView(modifier: Modifier = Modifier) {
                         loadWithOverviewMode = true
                         useWideViewPort = true
                         cacheMode = WebSettings.LOAD_DEFAULT
+                        mediaPlaybackRequiresUserGesture = false
                     }
-                    webViewClient = WebViewClient()
-                    webChromeClient = WebChromeClient()
+                    webViewClient = object : WebViewClient() {
+                        override fun onPageFinished(view: WebView?, url: String?) {
+                            super.onPageFinished(view, url)
+                            android.util.Log.i("SmartAmbulance", "Page finished loading: $url")
+                        }
+                    }
+                    webChromeClient = object : WebChromeClient() {
+                        override fun onConsoleMessage(consoleMessage: android.webkit.ConsoleMessage?): Boolean {
+                            android.util.Log.d(
+                                "SmartAmbulanceWeb",
+                                "${consoleMessage?.message()} -- line ${consoleMessage?.lineNumber()} of ${consoleMessage?.sourceId()}"
+                            )
+                            return true
+                        }
+                    }
                     loadUrl("file:///android_asset/web/index.html")
                 }
             }

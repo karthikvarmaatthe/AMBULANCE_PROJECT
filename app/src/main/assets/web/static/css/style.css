@@ -499,6 +499,27 @@ body {
     color: var(--text-muted);
 }
 
+.btn-admin {
+    padding: 5px 12px;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    border-radius: var(--radius-sm);
+    color: #38BDF8;
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-admin:hover {
+    background: rgba(56, 189, 248, 0.22);
+    border-color: #38BDF8;
+    color: #FFFFFF;
+}
+
 .btn-logout {
     padding: 5px 12px;
     background: transparent;

@@ -156,6 +156,124 @@ def logout():
     return redirect(url_for("login"))
 
 # ----------------------------------------------------------------------
+# Admin Portal Routes
+# ----------------------------------------------------------------------
+
+@app.route("/admin")
+@app.route("/admin/dashboard")
+@login_required
+def admin_dashboard():
+    """System Administration & Operational Management Portal."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, name, email FROM users ORDER BY id ASC")
+    users = cursor.fetchall()
+    conn.close()
+
+    hospitals = HOSPITALS if HOSPITALS else [n for n in CURRENT_NODES if n.get("type") == "hospital"]
+
+    return render_template(
+        "admin.html",
+        user_name=session.get("user_name", "Admin"),
+        user_email=session.get("user_email", ""),
+        users=users,
+        hospitals=hospitals,
+        nodes=CURRENT_NODES,
+        edges=CURRENT_EDGES,
+        areas=HYDERABAD_AREAS,
+        traffic_levels=TRAFFIC_LEVELS
+    )
+
+@app.route("/admin/user/add", methods=["POST"])
+@login_required
+def admin_add_user():
+    """Admin endpoint to provision a new responder account."""
+    name = request.form.get("name", "").strip()
+    email = request.form.get("email", "").strip().lower()
+    password = request.form.get("password", "")
+
+    if not name or not email or not password:
+        flash("All fields are required to create an account.", "warning")
+        return redirect(url_for("admin_dashboard"))
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM users WHERE email = ?", (email,))
+    if cursor.fetchone():
+        conn.close()
+        flash("An account with this email address already exists.", "danger")
+        return redirect(url_for("admin_dashboard"))
+
+    hashed_pwd = generate_password_hash(password)
+    try:
+        cursor.execute(
+            "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
+            (name, email, hashed_pwd)
+        )
+        conn.commit()
+        flash(f"Responder account for '{name}' successfully provisioned.", "success")
+    except Exception as e:
+        flash(f"Failed to create account: {str(e)}", "danger")
+    finally:
+        conn.close()
+
+    return redirect(url_for("admin_dashboard"))
+
+@app.route("/admin/user/delete/<int:user_id>", methods=["POST"])
+@login_required
+def admin_delete_user(user_id):
+    """Admin endpoint to remove a responder account."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM users")
+    total_users = cursor.fetchone()[0]
+
+    if total_users <= 1:
+        conn.close()
+        flash("Cannot delete the last registered responder account.", "warning")
+        return redirect(url_for("admin_dashboard"))
+
+    if session.get("user_id") == user_id:
+        conn.close()
+        flash("You cannot delete your own currently active session account.", "warning")
+        return redirect(url_for("admin_dashboard"))
+
+    try:
+        cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+        conn.commit()
+        flash("Responder account successfully removed.", "info")
+    except Exception as e:
+        flash(f"Failed to delete account: {str(e)}", "danger")
+    finally:
+        conn.close()
+
+    return redirect(url_for("admin_dashboard"))
+
+@app.route("/api/admin/stats", methods=["GET"])
+def get_admin_stats():
+    """Returns real-time telemetry stats for the administration dashboard."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM users")
+    user_count = cursor.fetchone()[0]
+    conn.close()
+
+    traffic_summary = {}
+    for edge in CURRENT_EDGES:
+        t = edge.get("traffic", "clear").lower()
+        traffic_summary[t] = traffic_summary.get(t, 0) + 1
+
+    return jsonify({
+        "success": True,
+        "hospitals_count": len(HOSPITALS),
+        "nodes_count": len(CURRENT_NODES),
+        "edges_count": len(CURRENT_EDGES),
+        "areas_count": len(HYDERABAD_AREAS),
+        "users_count": user_count,
+        "traffic_summary": traffic_summary
+    })
+
+# ----------------------------------------------------------------------
 # REST API Endpoints
 # ----------------------------------------------------------------------
 

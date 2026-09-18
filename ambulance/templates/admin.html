@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration Portal – Smart Ambulance Hyderabad</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Application Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .admin-page-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px 20px 48px;
+        }
+
+        .admin-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .admin-stat-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 20px 22px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: var(--shadow-card);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .admin-stat-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--border-accent);
+        }
+
+        .admin-stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(56, 189, 248, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .admin-stat-icon.emergency {
+            background: rgba(239, 68, 68, 0.12);
+            border-color: rgba(239, 68, 68, 0.25);
+        }
+
+        .admin-stat-icon.hospital {
+            background: rgba(16, 185, 129, 0.12);
+            border-color: rgba(16, 185, 129, 0.25);
+        }
+
+        .admin-stat-icon.amber {
+            background: rgba(245, 158, 11, 0.12);
+            border-color: rgba(245, 158, 11, 0.25);
+        }
+
+        .admin-stat-value {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1.2;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .admin-stat-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .admin-tab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 700;
+            padding: 8px 18px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-tab-btn:hover {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-primary);
+        }
+
+        .admin-tab-btn.active {
+            background: rgba(56, 189, 248, 0.14);
+            border-color: rgba(56, 189, 248, 0.35);
+            color: #38BDF8;
+        }
+
+        .admin-section {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            box-shadow: var(--shadow-card);
+            margin-bottom: 24px;
+        }
+
+        .admin-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .admin-section-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-search-input {
+            background: var(--bg-body);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            padding: 8px 14px;
+            color: var(--text-primary);
+            font-size: 13px;
+            min-width: 260px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .admin-search-input:focus {
+            border-color: var(--color-sky);
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .admin-table th {
+            text-align: left;
+            padding: 12px 14px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-subtle);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .admin-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: var(--text-secondary);
+            vertical-align: middle;
+        }
+
+        .admin-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-primary);
+        }
+
+        .badge-role {
+            padding: 3px 10px;
+            border-radius: var(--radius-full);
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: #38BDF8;
+        }
+
+        .badge-trauma {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #F87171;
+        }
+
+        .badge-traffic {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .traffic-clear { background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .traffic-light { background: rgba(59, 130, 246, 0.15); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .traffic-moderate { background: rgba(245, 158, 11, 0.15); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .traffic-heavy { background: rgba(239, 68, 68, 0.15); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .traffic-severe { background: rgba(127, 29, 29, 0.3); color: #FCA5A5; border: 1px solid #B91C1C; }
+
+        .btn-table-del {
+            padding: 4px 10px;
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #F87171;
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-table-del:hover {
+            background: #EF4444;
+            color: #FFFFFF;
+        }
+
+        .admin-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+            background: var(--bg-body);
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-subtle);
+            margin-bottom: 20px;
+        }
+
+        .admin-form-field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .admin-form-input {
+            width: 100%;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-size: 13px;
+            outline: none;
+        }
+
+        .admin-form-input:focus {
+            border-color: var(--color-sky);
+        }
+
+        .btn-provision {
+            height: 38px;
+            margin-top: 20px;
+            background: var(--color-emergency);
+            border: none;
+            border-radius: var(--radius-sm);
+            color: #FFFFFF;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s;
+            padding: 0 16px;
+        }
+
+        .btn-provision:hover {
+            background: var(--color-emergency-hover);
+        }
+
+        .table-scroll-container {
+            max-height: 520px;
+            overflow-y: auto;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+        }
+
+        .table-scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .table-scroll-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <!-- Navigation Header -->
+    <header class="app-header">
+        <div class="header-brand">
+            <div class="header-logo">
+                <span class="logo-icon">🚑</span>
+            </div>
+            <div>
+                <h1 class="header-title">SMART AMBULANCE</h1>
+                <p class="header-subtitle">System Administration & Telemetry Portal – Hyderabad</p>
+            </div>
+        </div>
+
+        <div class="header-status-group">
+            <a href="{{ url_for('index') }}" class="btn-admin" style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; padding: 7px 14px;" title="Back to Live Emergency Dispatch Map">
+                <span>🗺️</span> Live Dispatch Map
+            </a>
+
+            <div class="user-profile">
+                <div class="user-avatar">👤</div>
+                <div class="user-info">
+                    <span class="user-name">{{ user_name }}</span>
+                    <span class="user-email">{{ user_email }}</span>
+                </div>
+                <a href="{{ url_for('logout') }}" class="btn-logout" title="Sign out">Log Out</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="admin-page-container">
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div style="margin-bottom: 20px;">
+                    {% for category, message in messages %}
+                        <div class="notification-bar notification-{{ category }}" style="border-radius: var(--radius-sm); margin-bottom: 8px;">
+                            <span>{% if category == 'success' %}✅{% elif category == 'danger' %}⚠️{% else %}ℹ️{% endif %}</span>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Stat Summary Cards -->
+        <div class="admin-stat-grid">
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon hospital">🏥</div>
+                <div>
+                    <div class="admin-stat-value">{{ hospitals|length }}</div>
+                    <div class="admin-stat-label">Connected Hospitals</div>
+                </div>
+            </div>
+
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon">📍</div>
+                <div>
+                    <div class="admin-stat-value">{{ nodes|length }}</div>
+                    <div class="admin-stat-label">Hyderabad Junctions ({{ areas|length }} Areas)</div>
+                </div>
+            </div>
+
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon amber">🛣️</div>
+                <div>
+                    <div class="admin-stat-value">{{ edges|length }}</div>
+                    <div class="admin-stat-label">Monitored Corridors</div>
+                </div>
+            </div>
+
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon emergency">👨‍⚕️</div>
+                <div>
+                    <div class="admin-stat-value">{{ users|length }}</div>
+                    <div class="admin-stat-label">Active Responders</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="admin-tabs">
+            <button class="admin-tab-btn active" onclick="switchAdminTab('users')">👥 User Accounts</button>
+            <button class="admin-tab-btn" onclick="switchAdminTab('hospitals')">🏥 Hospital Registry ({{ hospitals|length }})</button>
+            <button class="admin-tab-btn" onclick="switchAdminTab('traffic')">🚦 Road & Congestion Control ({{ edges|length }})</button>
+            <button class="admin-tab-btn" onclick="switchAdminTab('system')">⚙️ System Telemetry</button>
+        </div>
+
+        <!-- TAB 1: User Management -->
+        <div id="tab-users" class="admin-section">
+            <div class="admin-section-header">
+                <div class="admin-section-title">
+                    <span>👥</span> Responder Accounts & Authentication Registry
+                </div>
+            </div>
+
+            <!-- Provision Form -->
+            <form action="{{ url_for('admin_add_user') }}" method="POST" class="admin-form-grid">
+                <div class="admin-form-field">
+                    <label>Responder Full Name</label>
+                    <input type="text" name="name" class="admin-form-input" placeholder="e.g. Dr. Ramesh Kumar" required>
+                </div>
+                <div class="admin-form-field">
+                    <label>Official Email</label>
+                    <input type="email" name="email" class="admin-form-input" placeholder="e.g. ramesh@emergency.hyderabad.gov.in" required>
+                </div>
+                <div class="admin-form-field">
+                    <label>Account Password</label>
+                    <input type="password" name="password" class="admin-form-input" placeholder="Min 6 characters" required>
+                </div>
+                <div>
+                    <button type="submit" class="btn-provision">+ Provision Account</button>
+                </div>
+            </form>
+
+            <!-- User Table -->
+            <div class="table-scroll-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">ID</th>
+                            <th>Responder Name</th>
+                            <th>Email Address</th>
+                            <th>System Role</th>
+                            <th style="width: 100px; text-align: center;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in users %}
+                        <tr>
+                            <td><code>#{{ u['id'] }}</code></td>
+                            <td><strong>{{ u['name'] }}</strong></td>
+                            <td>{{ u['email'] }}</td>
+                            <td><span class="badge-role">Authorized Paramedic</span></td>
+                            <td style="text-align: center;">
+                                <form action="{{ url_for('admin_delete_user', user_id=u['id']) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove account for {{ u['name'] }}?');" style="display:inline;">
+                                    <button type="submit" class="btn-table-del">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 2: Hospital Registry -->
+        <div id="tab-hospitals" class="admin-section" style="display: none;">
+            <div class="admin-section-header">
+                <div class="admin-section-title">
+                    <span>🏥</span> Hyderabad Connected Hospital Registry ({{ hospitals|length }})
+                </div>
+                <input type="text" id="hospSearchInput" class="admin-search-input" placeholder="🔍 Search hospitals or areas..." onkeyup="filterHospitalTable()">
+            </div>
+
+            <div class="table-scroll-container">
+                <table id="hospitalTable" class="admin-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 140px;">Identifier</th>
+                            <th>Hospital Name</th>
+                            <th>Specialization & Facilities</th>
+                            <th style="width: 160px;">Coordinates</th>
+                            <th style="width: 140px;">Trauma Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for h in hospitals %}
+                        <tr>
+                            <td><code>{{ h['id'] }}</code></td>
+                            <td><strong>{{ h['name'] }}</strong></td>
+                            <td>{{ h['details'] }}</td>
+                            <td><small><code>{{ h['lat'] }}, {{ h['lng'] }}</code></small></td>
+                            <td><span class="badge-trauma">Level 1 Emergency</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 3: Road & Congestion Control -->
+        <div id="tab-traffic" class="admin-section" style="display: none;">
+            <div class="admin-section-header">
+                <div class="admin-section-title">
+                    <span>🚦</span> Road Network & Real-Time Congestion Overrides
+                </div>
+                <input type="text" id="roadSearchInput" class="admin-search-input" placeholder="🔍 Filter road corridors..." onkeyup="filterRoadTable()">
+            </div>
+
+            <div class="table-scroll-container">
+                <table id="roadTable" class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Corridor Name</th>
+                            <th>Source Junction</th>
+                            <th>Destination Junction</th>
+                            <th style="width: 110px;">Distance</th>
+                            <th style="width: 110px;">Base Time</th>
+                            <th style="width: 140px;">Live Congestion</th>
+                            <th style="width: 180px;">Override Traffic</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in edges %}
+                        <tr>
+                            <td><strong>{{ e['name'] }}</strong></td>
+                            <td><code>{{ e['source'] }}</code></td>
+                            <td><code>{{ e['target'] }}</code></td>
+                            <td>{{ e['distance'] }} km</td>
+                            <td>{{ e['base_time'] }} min</td>
+                            <td>
+                                <span class="badge-traffic traffic-{{ e['traffic']|lower }}" id="traffic-badge-{{ e['source'] }}-{{ e['target'] }}">
+                                    {{ e['traffic']|capitalize }}
+                                </span>
+                            </td>
+                            <td>
+                                <select class="admin-form-input" style="padding: 4px 8px; font-size: 11px;" onchange="updateRoadTraffic('{{ e['source'] }}', '{{ e['target'] }}', this.value)">
+                                    <option value="clear" {% if e['traffic'] == 'clear' %}selected{% endif %}>Clear (1.0x)</option>
+                                    <option value="light" {% if e['traffic'] == 'light' %}selected{% endif %}>Light (1.25x)</option>
+                                    <option value="moderate" {% if e['traffic'] == 'moderate' %}selected{% endif %}>Moderate (1.6x)</option>
+                                    <option value="heavy" {% if e['traffic'] == 'heavy' %}selected{% endif %}>Heavy (2.2x)</option>
+                                    <option value="severe" {% if e['traffic'] == 'severe' %}selected{% endif %}>Severe (3.2x)</option>
+                                </select>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 4: System Telemetry -->
+        <div id="tab-system" class="admin-section" style="display: none;">
+            <div class="admin-section-header">
+                <div class="admin-section-title">
+                    <span>⚙️</span> System Architecture & Telemetry Specs
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
+                <div style="background: var(--bg-body); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 18px;">
+                    <h3 style="font-size: 14px; font-weight: 800; color: #38BDF8; margin-bottom: 12px;">🗺️ Map & Tile Infrastructure</h3>
+                    <ul style="list-style: none; padding: 0; margin: 0; font-size: 13px; color: var(--text-secondary); line-height: 1.8;">
+                        <li><strong>Engine:</strong> Leaflet.js Standard Architecture</li>
+                        <li><strong>Tiles:</strong> OpenStreetMap Standard (<code style="color: #38BDF8;">tile.openstreetmap.org</code>)</li>
+                        <li><strong>Watermarks:</strong> Zero watermarks, zero CARTO dependencies</li>
+                        <li><strong>API Keys:</strong> Zero external API keys required</li>
+                        <li><strong>Attribution:</strong> &copy; OpenStreetMap contributors</li>
+                    </ul>
+                </div>
+
+                <div style="background: var(--bg-body); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 18px;">
+                    <h3 style="font-size: 14px; font-weight: 800; color: #34D399; margin-bottom: 12px;">🧠 Routing & Optimization Engine</h3>
+                    <ul style="list-style: none; padding: 0; margin: 0; font-size: 13px; color: var(--text-secondary); line-height: 1.8;">
+                        <li><strong>Algorithm:</strong> Dijkstra Shortest Path with Min-Heap Priority Queue</li>
+                        <li><strong>Multi-Route Engine:</strong> Yen's K-Shortest Alternative Corridors (K=3)</li>
+                        <li><strong>Cost Metric:</strong> Travel Time with Live Traffic Congestion Multipliers</li>
+                        <li><strong>Coverage:</strong> 113 Junctions, 149 Bidirectional Roads, 78 Areas</li>
+                        <li><strong>Snapping:</strong> Haversine Nearest-Node Geometric Snapping</li>
+                    </ul>
+                </div>
+
+                <div style="background: var(--bg-body); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 18px;">
+                    <h3 style="font-size: 14px; font-weight: 800; color: #FBBF24; margin-bottom: 12px;">💾 Storage & Runtime Specifications</h3>
+                    <ul style="list-style: none; padding: 0; margin: 0; font-size: 13px; color: var(--text-secondary); line-height: 1.8;">
+                        <li><strong>Database:</strong> SQLite Local Database (<code style="color: #FBBF24;">ambulance.db</code>)</li>
+                        <li><strong>Server Backend:</strong> Python 3 + Flask Full-Stack Architecture</li>
+                        <li><strong>Android Runtime:</strong> Jetpack Compose + Native WebView Integration</li>
+                        <li><strong>Audio Engine:</strong> Web Audio API Emergency Siren & Arrival Chimes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        function switchAdminTab(tabName) {
+            ['users', 'hospitals', 'traffic', 'system'].forEach(name => {
+                const tab = document.getElementById('tab-' + name);
+                if (tab) tab.style.display = (name === tabName) ? 'block' : 'none';
+            });
+            const buttons = document.querySelectorAll('.admin-tab-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('onclick').includes(tabName)) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        function filterHospitalTable() {
+            const query = document.getElementById('hospSearchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#hospitalTable tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        }
+
+        function filterRoadTable() {
+            const query = document.getElementById('roadSearchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#roadTable tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        }
+
+        async function updateRoadTraffic(source, target, level) {
+            try {
+                const res = await fetch('/api/traffic', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ source: source, target: target, level: level })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const badge = document.getElementById('traffic-badge-' + source + '-' + target);
+                    if (badge) {
+                        badge.className = 'badge-traffic traffic-' + level.toLowerCase();
+                        badge.textContent = level.charAt(0).toUpperCase() + level.slice(1);
+                    }
+                } else {
+                    alert('Failed to update traffic: ' + (data.error || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error('Traffic update error:', err);
+                alert('Connection error while updating traffic');
+            }
+        }
+    </script>
+</body>
+</html>

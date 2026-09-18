@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration Portal – Smart Ambulance Hyderabad</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Application Stylesheet -->
+    <link rel="stylesheet" href="static/css/style.css">
+
+    <style>
+        .admin-page-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px 16px 40px;
+        }
+
+        .admin-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .admin-stat-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .admin-stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(56, 189, 248, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .admin-stat-icon.emergency {
+            background: rgba(239, 68, 68, 0.12);
+            border-color: rgba(239, 68, 68, 0.25);
+        }
+
+        .admin-stat-icon.hospital {
+            background: rgba(16, 185, 129, 0.12);
+            border-color: rgba(16, 185, 129, 0.25);
+        }
+
+        .admin-stat-icon.amber {
+            background: rgba(245, 158, 11, 0.12);
+            border-color: rgba(245, 158, 11, 0.25);
+        }
+
+        .admin-stat-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1.2;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .admin-stat-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 10px;
+            overflow-x: auto;
+        }
+
+        .admin-tab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .admin-tab-btn.active {
+            background: rgba(56, 189, 248, 0.14);
+            border-color: rgba(56, 189, 248, 0.35);
+            color: #38BDF8;
+        }
+
+        .admin-section {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            box-shadow: var(--shadow-card);
+            margin-bottom: 24px;
+        }
+
+        .admin-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .admin-section-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-search-input {
+            background: var(--bg-body);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-size: 13px;
+            min-width: 240px;
+            outline: none;
+        }
+
+        .admin-search-input:focus {
+            border-color: var(--color-sky);
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .admin-table th {
+            text-align: left;
+            padding: 10px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-subtle);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .admin-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: var(--text-secondary);
+        }
+
+        .table-scroll-container {
+            max-height: 480px;
+            overflow-y: auto;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+        }
+
+        .badge-role {
+            padding: 3px 8px;
+            border-radius: var(--radius-full);
+            font-size: 10px;
+            font-weight: 700;
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: #38BDF8;
+        }
+
+        .badge-trauma {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #F87171;
+        }
+
+        .badge-traffic {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .traffic-clear { background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .traffic-light { background: rgba(59, 130, 246, 0.15); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .traffic-moderate { background: rgba(245, 158, 11, 0.15); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .traffic-heavy { background: rgba(239, 68, 68, 0.15); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .traffic-severe { background: rgba(127, 29, 29, 0.3); color: #FCA5A5; border: 1px solid #B91C1C; }
+
+        .btn-table-del {
+            padding: 4px 8px;
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #F87171;
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-table-del:hover {
+            background: #EF4444;
+            color: #FFFFFF;
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <!-- Navigation Header -->
+    <header class="app-header">
+        <div class="header-brand">
+            <div class="header-logo">
+                <span class="logo-icon">🚑</span>
+            </div>
+            <div>
+                <h1 class="header-title">SMART AMBULANCE</h1>
+                <p class="header-subtitle">System Administration Portal – Hyderabad</p>
+            </div>
+        </div>
+
+        <div class="header-status-group">
+            <a href="index.html" class="btn-admin" style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; padding: 7px 14px; text-decoration: none;" title="Back to Live Emergency Dispatch Map">
+                <span>🗺️</span> Live Dispatch Map
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="admin-page-container">
+
+        <!-- Stat Summary Cards -->
+        <div class="admin-stat-grid">
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon hospital">🏥</div>
+                <div>
+                    <div class="admin-stat-value" id="statHospitals">26</div>
+                    <div class="admin-stat-label">Connected Hospitals</div>
+                </div>
+            </div>
+
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon">📍</div>
+                <div>
+                    <div class="admin-stat-value" id="statNodes">113</div>
+                    <div class="admin-stat-label">Junctions (78 Areas)</div>
+                </div>
+            </div>
+
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon amber">🛣️</div>
+                <div>
+                    <div class="admin-stat-value" id="statEdges">149</div>
+                    <div class="admin-stat-label">Monitored Corridors</div>
+                </div>
+            </div>
+
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon emergency">👨‍⚕️</div>
+                <div>
+                    <div class="admin-stat-value" id="statUsers">3</div>
+                    <div class="admin-stat-label">Active Responders</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="admin-tabs">
+            <button class="admin-tab-btn active" onclick="switchAdminTab('hospitals')">🏥 Hospital Registry (26)</button>
+            <button class="admin-tab-btn" onclick="switchAdminTab('traffic')">🚦 Road & Congestion (149)</button>
+            <button class="admin-tab-btn" onclick="switchAdminTab('users')">👥 Responder Accounts</button>
+            <button class="admin-tab-btn" onclick="switchAdminTab('system')">⚙️ System Telemetry</button>
+        </div>
+
+        <!-- TAB 1: Hospital Registry -->
+        <div id="tab-hospitals" class="admin-section">
+            <div class="admin-section-header">
+                <div class="admin-section-title">
+                    <span>🏥</span> Hyderabad Connected Hospital Registry (26)
+                </div>
+                <input type="text" id="hospSearchInput" class="admin-search-input" placeholder="🔍 Search hospitals or areas..." onkeyup="filterHospitalTable()">
+            </div>
+
+            <div class="table-scroll-container">
+                <table id="hospitalTable" class="admin-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 140px;">Identifier</th>
+                            <th>Hospital Name</th>
+                            <th>Specialization & Facilities</th>
+                            <th style="width: 160px;">Coordinates</th>
+                            <th style="width: 130px;">Trauma Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hospitalTableBody">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 2: Road & Congestion Control -->
+        <div id="tab-traffic" class="admin-section" style="display: none;">
+            <div class="admin-section-header">
+                <div class="admin-section-title">
+                    <span>🚦</span> Road Network & Real-Time Congestion Overrides
+                </div>
+                <input type="text" id="roadSearchInput" class="admin-search-input" placeholder="🔍 Filter road corridors..." onkeyup="filterRoadTable()">
+            </div>
+
+            <div class="table-scroll-container">
+                <table id="roadTable" class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Corridor Name</th>
+                            <th>Source Junction</th>
+                            <th>Destination Junction</th>
+                            <th style="width: 100px;">Distance</th>
+                            <th style="width: 100px;">Base Time</th>
+                            <th style="width: 130px;">Congestion</th>
+                        </tr>
+                    </thead>
+                    <tbody id="roadTableBody">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 3: User Management -->
+        <div id="tab-users" class="admin-section" style="display: none;">
+            <div class="admin-section-header">
+                <div class="admin-section-title">
+                    <span>👥</span> Responder Accounts & Authentication Registry
+                </div>
+            </div>
+
+            <div class="table-scroll-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">ID</th>
+                            <th>Responder Name</th>
+                            <th>Email Address</th>
+                            <th>System Role</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>#1</code></td>
+                            <td><strong>Captain Alex Taylor</strong></td>
+                            <td>paramedic@emergency.org</td>
+                            <td><span class="badge-role">Chief Paramedic</span></td>
+                            <td><span style="color: #34D399; font-weight: 700;">● Active</span></td>
+                        </tr>
+                        <tr>
+                            <td><code>#2</code></td>
+                            <td><strong>Dr. Priya Sharma</strong></td>
+                            <td>priya.sharma@nims.gov.in</td>
+                            <td><span class="badge-role">Trauma Specialist</span></td>
+                            <td><span style="color: #34D399; font-weight: 700;">● Active</span></td>
+                        </tr>
+                        <tr>
+                            <td><code>#3</code></td>
+                            <td><strong>Karthik Varma</strong></td>
+                            <td>karthikvarmaatthe@gmail.com</td>
+                            <td><span class="badge-role">System Administrator</span></td>
+                            <td><span style="color: #34D399; font-weight: 700;">● Active</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 4: System Telemetry -->
+        <div id="tab-system" class="admin-section" style="display: none;">
+            <div class="admin-section-header">
+                <div class="admin-section-title">
+                    <span>⚙️</span> System Architecture & Telemetry Specs
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
+                <div style="background: var(--bg-body); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 16px;">
+                    <h3 style="font-size: 14px; font-weight: 800; color: #38BDF8; margin-bottom: 10px;">🗺️ Map & Tile Infrastructure</h3>
+                    <ul style="list-style: none; padding: 0; margin: 0; font-size: 12px; color: var(--text-secondary); line-height: 1.8;">
+                        <li><strong>Engine:</strong> Leaflet.js Standard Architecture</li>
+                        <li><strong>Tiles:</strong> OpenStreetMap Standard (<code style="color: #38BDF8;">tile.openstreetmap.org</code>)</li>
+                        <li><strong>Watermarks:</strong> Zero watermarks, zero CARTO dependencies</li>
+                        <li><strong>API Keys:</strong> Zero external API keys required</li>
+                        <li><strong>Attribution:</strong> &copy; OpenStreetMap contributors</li>
+                    </ul>
+                </div>
+
+                <div style="background: var(--bg-body); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 16px;">
+                    <h3 style="font-size: 14px; font-weight: 800; color: #34D399; margin-bottom: 10px;">🧠 Routing & Optimization Engine</h3>
+                    <ul style="list-style: none; padding: 0; margin: 0; font-size: 12px; color: var(--text-secondary); line-height: 1.8;">
+                        <li><strong>Algorithm:</strong> Dijkstra Shortest Path with Min-Heap Priority Queue</li>
+                        <li><strong>Multi-Route:</strong> Yen's K-Shortest Alternative Corridors (K=3)</li>
+                        <li><strong>Cost Metric:</strong> Travel Time with Live Traffic Congestion Multipliers</li>
+                        <li><strong>Coverage:</strong> 113 Junctions, 149 Bidirectional Roads, 78 Areas</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="static/js/main.js"></script>
+    <script>
+        function switchAdminTab(tabName) {
+            ['hospitals', 'traffic', 'users', 'system'].forEach(name => {
+                const tab = document.getElementById('tab-' + name);
+                if (tab) tab.style.display = (name === tabName) ? 'block' : 'none';
+            });
+            const buttons = document.querySelectorAll('.admin-tab-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('onclick').includes(tabName)) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        function filterHospitalTable() {
+            const query = document.getElementById('hospSearchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#hospitalTable tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        }
+
+        function filterRoadTable() {
+            const query = document.getElementById('roadSearchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#roadTable tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        }
+
+        // Initialize table from embedded graph data
+        window.addEventListener('DOMContentLoaded', function() {
+            if (typeof FALLBACK_GRAPH !== 'undefined') {
+                const hospitals = FALLBACK_GRAPH.hospitals || [];
+                const edges = FALLBACK_GRAPH.edges || [];
+
+                document.getElementById('statHospitals').textContent = hospitals.length;
+                document.getElementById('statNodes').textContent = (FALLBACK_GRAPH.nodes || []).length;
+                document.getElementById('statEdges').textContent = edges.length;
+
+                // Render hospitals
+                const hospTbody = document.getElementById('hospitalTableBody');
+                hospTbody.innerHTML = hospitals.map(h => `
+                    <tr>
+                        <td><code>${h.id}</code></td>
+                        <td><strong>${h.name}</strong></td>
+                        <td>${h.details || 'Level 1 Trauma Center'}</td>
+                        <td><small><code>${h.lat}, ${h.lng}</code></small></td>
+                        <td><span class="badge-trauma">Level 1 Emergency</span></td>
+                    </tr>
+                `).join('');
+
+                // Render roads
+                const roadTbody = document.getElementById('roadTableBody');
+                roadTbody.innerHTML = edges.map(e => `
+                    <tr>
+                        <td><strong>${e.name}</strong></td>
+                        <td><code>${e.source}</code></td>
+                        <td><code>${e.target}</code></td>
+                        <td>${e.distance} km</td>
+                        <td>${e.base_time} min</td>
+                        <td>
+                            <span class="badge-traffic traffic-${(e.traffic || 'clear').toLowerCase()}">
+                                ${(e.traffic || 'Clear')}
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        });
+    </script>
+</body>
+</html>
