@@ -90,15 +90,15 @@
     });
 
     /**
-     * Initializes the Leaflet map with OpenStreetMap dark tiles
+     * Initializes the Leaflet map with OpenStreetMap dark tiles & Hyderabad center
      */
     function initMap() {
         if (map) return;
 
-        // Default center around city coordinates
+        // Centered over Hyderabad metropolitan area
         map = L.map('map', {
-            center: [17.405, 78.490],
-            zoom: 13,
+            center: [17.405, 78.475],
+            zoom: 12,
             zoomControl: true
         });
 
@@ -109,17 +109,95 @@
             maxZoom: 19
         }).addTo(map);
 
+        // Allow user to click anywhere on Hyderabad map to position the ambulance
+        map.on('click', onMapClick);
+
         // Invalidate map size on window resize
         window.addEventListener('resize', function () {
             if (map) map.invalidateSize();
         });
     }
 
+    /**
+     * Handles map click to place the ambulance at custom coordinates and snap to nearest road node
+     */
+    function onMapClick(e) {
+        if (isNavigating) {
+            showNotification('Navigation is currently active. Please reset the route before changing origin.', 'warning');
+            return;
+        }
+
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+
+        const nearest = findLocalNearestNode(lat, lng);
+        if (!nearest) return;
+
+        setAmbulancePosition(nearest, lat, lng, true);
+        showNotification(`Ambulance placed at [${lat.toFixed(4)}, ${lng.toFixed(4)}] snapped near ${nearest.name}. Ready to dispatch.`, 'info');
+    }
+
+    function findLocalNearestNode(lat, lng) {
+        if (!graphData.nodes || !graphData.nodes.length) return null;
+        let best = null;
+        let minDist = Infinity;
+        for (const n of graphData.nodes) {
+            const d = calculateHaversineDistance(lat, lng, n.lat, n.lng);
+            if (d < minDist) {
+                minDist = d;
+                best = n;
+            }
+        }
+        return best;
+    }
+
+    function setAmbulancePosition(node, lat, lng, isCustomCoord = false) {
+        startNode = {
+            ...node,
+            lat: lat !== undefined ? lat : node.lat,
+            lng: lng !== undefined ? lng : node.lng,
+            snappedNodeId: node.id
+        };
+
+        ensureAmbulanceMarker(startNode.lat, startNode.lng);
+
+        const startNameElem = document.getElementById('startNodeName');
+        const startCoordsElem = document.getElementById('startNodeCoords');
+        const areaSelect = document.getElementById('originAreaSelect');
+
+        if (startNameElem) {
+            startNameElem.textContent = isCustomCoord ? `${node.name} (Custom Point)` : node.name;
+        }
+        if (startCoordsElem) {
+            startCoordsElem.textContent = `Lat: ${startNode.lat.toFixed(4)}, Lng: ${startNode.lng.toFixed(4)}`;
+        }
+
+        if (areaSelect) {
+            areaSelect.value = node.id;
+        }
+
+        // Update hospital preview direct distance if one is selected
+        if (selectedHospital) {
+            const straightDist = calculateHaversineDistance(startNode.lat, startNode.lng, selectedHospital.lat, selectedHospital.lng);
+            const distElem = document.getElementById('hospDistanceDirect');
+            if (distElem) distElem.textContent = `${straightDist.toFixed(1)} km`;
+        }
+
+        // Clear active route if origin shifted
+        if (availableRoutes.length > 0 && !isNavigating) {
+            activeRoutePolylines.forEach(pl => map.removeLayer(pl));
+            activeRoutePolylines = [];
+            availableRoutes = [];
+            const routesCard = document.getElementById('routesListCard');
+            if (routesCard) routesCard.style.display = 'none';
+        }
+    }
+
     // -------------------------------------------------------------------------
     // Fetch Graph & Setup Network
     // -------------------------------------------------------------------------
     async function fetchGraphData() {
-        updateLoadingStatus('Connecting to emergency route server...');
+        updateLoadingStatus('Connecting to Hyderabad emergency route server...');
 
         try {
             const response = await fetch('/api/graph');
@@ -138,14 +216,7 @@
             startNode = data.ambulance || (data.nodes && data.nodes[0]);
             
             // Update UI with origin info
-            const startNameElem = document.getElementById('startNodeName');
-            const startCoordsElem = document.getElementById('startNodeCoords');
-            if (startNameElem && startNode) {
-                startNameElem.textContent = startNode.name;
-            }
-            if (startCoordsElem && startNode) {
-                startCoordsElem.textContent = `Lat: ${startNode.lat.toFixed(4)}, Lng: ${startNode.lng.toFixed(4)}`;
-            }
+            setAmbulancePosition(startNode, startNode.lat, startNode.lng, false);
 
             // Render road network and markers
             renderRoadNetwork(data.edges, data.nodes);
@@ -153,18 +224,19 @@
             ensureAmbulanceMarker(startNode.lat, startNode.lng);
 
             // Populate dropdowns
+            populateOriginAreaDropdown(data.areas, startNode);
             populateHospitalDropdown(data.hospitals);
             populateTrafficRoadDropdown(data.edges);
 
             // Center map on starting ambulance node
             if (startNode) {
-                map.setView([startNode.lat, startNode.lng], 13);
+                map.setView([startNode.lat, startNode.lng], 12);
             }
 
-            // Dismiss loading overlay completely - fixes Problem 4
+            // Dismiss loading overlay completely
             hideLoadingOverlay();
 
-            showNotification('City road network loaded. Ambulance ready at Central Emergency Depot.', 'info');
+            showNotification('Hyderabad city-wide road network loaded. Ambulance ready for dispatch.', 'info');
 
         } catch (error) {
             console.error('Error loading graph:', error);
@@ -350,6 +422,48 @@
     // -------------------------------------------------------------------------
     // UI Populators & Selectors
     // -------------------------------------------------------------------------
+    function populateOriginAreaDropdown(areas, defaultNode) {
+        const select = document.getElementById('originAreaSelect');
+        if (!select) return;
+
+        select.innerHTML = '<option value="" disabled selected>-- Select Ambulance Origin (Hyderabad) --</option>';
+
+        if (areas && areas.length) {
+            areas.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.id;
+                opt.textContent = `${item.area} — ${item.name}`;
+                if (defaultNode && (defaultNode.id === item.id || defaultNode.area === item.area)) {
+                    opt.selected = true;
+                }
+                select.appendChild(opt);
+            });
+        } else if (graphData.nodes) {
+            graphData.nodes.filter(n => n.type === 'intersection').forEach(n => {
+                const opt = document.createElement('option');
+                opt.value = n.id;
+                opt.textContent = `${n.area || n.name} — ${n.name}`;
+                if (defaultNode && defaultNode.id === n.id) {
+                    opt.selected = true;
+                }
+                select.appendChild(opt);
+            });
+        }
+    }
+
+    window.onOriginAreaChanged = function () {
+        const select = document.getElementById('originAreaSelect');
+        if (!select || !select.value) return;
+
+        const nodeId = select.value;
+        const node = graphData.nodes.find(n => n.id === nodeId);
+        if (!node) return;
+
+        setAmbulancePosition(node, node.lat, node.lng, false);
+        map.setView([node.lat, node.lng], 13);
+        showNotification(`Ambulance relocated to ${node.name} (${node.area || 'Hyderabad'}).`, 'info');
+    };
+
     function populateHospitalDropdown(hospitals) {
         const select = document.getElementById('hospitalSelect');
         if (!select) return;
@@ -463,14 +577,19 @@
             return;
         }
 
-        const sourceId = startNode ? startNode.id : 'amb_station_1';
+        const sourceId = (startNode && startNode.snappedNodeId) ? startNode.snappedNodeId : (startNode ? startNode.id : 'amb_central_hyderabad');
         const targetId = selectedHospital.id;
 
-        showNotification(`Calculating best routes using Dijkstra algorithm & live traffic...`, 'info');
+        showNotification(`Calculating best routes across Hyderabad using Dijkstra algorithm & live traffic...`, 'info');
         setAmbulanceStatus('Calculating Route...', 'enroute');
 
         try {
-            const response = await fetch(`/api/routes?source=${sourceId}&target=${targetId}&k=3`);
+            let url = `/api/routes?source=${sourceId}&target=${targetId}&k=3`;
+            if (startNode && startNode.lat !== undefined && startNode.lng !== undefined) {
+                url += `&source_lat=${startNode.lat}&source_lng=${startNode.lng}`;
+            }
+
+            const response = await fetch(url);
             if (!response.ok) {
                 throw new Error(`Routing request failed: ${response.status}`);
             }
@@ -491,7 +610,7 @@
 
             showNotification(`Optimal route found: ${data.best_route.total_distance_km} km in ${data.best_route.total_time_min} min. Commencing navigation!`, 'success');
 
-            // Automatically start navigation - fixes Problem 5 & Problem 10
+            // Automatically start navigation
             startAmbulanceMovement();
 
         } catch (error) {

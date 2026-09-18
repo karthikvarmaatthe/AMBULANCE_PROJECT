@@ -80,6 +80,21 @@ class RoutingEngine:
             edge["traffic"] = "clear"
         self._build_graph()
 
+    def find_nearest_node(self, lat, lng):
+        """Finds the closest node on the road graph to a given latitude & longitude."""
+        best_node = None
+        min_dist = float("inf")
+        for node in self.nodes_dict.values():
+            dlat = math.radians(node["lat"] - lat)
+            dlon = math.radians(node["lng"] - lng)
+            a = math.sin(dlat / 2)**2 + math.cos(math.radians(lat)) * math.cos(math.radians(node["lat"])) * math.sin(dlon / 2)**2
+            c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+            dist = 6371.0 * c
+            if dist < min_dist:
+                min_dist = dist
+                best_node = node
+        return best_node, round(min_dist, 2)
+
     def _dijkstra(self, source, target, excluded_edges=None, excluded_nodes=None):
         if excluded_edges is None:
             excluded_edges = set()

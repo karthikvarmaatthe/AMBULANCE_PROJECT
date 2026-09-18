@@ -10,7 +10,7 @@ from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from graph_data import DEFAULT_NODES, DEFAULT_EDGES, TRAFFIC_LEVELS
+from graph_data import DEFAULT_NODES, DEFAULT_EDGES, TRAFFIC_LEVELS, HOSPITALS, AMBULANCE_START, HYDERABAD_AREAS, MAP_CENTER, DEFAULT_ZOOM
 from routing import RoutingEngine
 
 app = Flask(__name__)
@@ -21,6 +21,7 @@ DB_NAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ambulance.db
 # In-memory graph state for live traffic simulation (initialized from graph_data)
 CURRENT_NODES = copy.deepcopy(DEFAULT_NODES)
 CURRENT_EDGES = copy.deepcopy(DEFAULT_EDGES)
+CURRENT_AMBULANCE = copy.deepcopy(AMBULANCE_START)
 routing_engine = RoutingEngine(CURRENT_NODES, CURRENT_EDGES)
 
 def get_db():
@@ -160,32 +161,119 @@ def logout():
 
 @app.route("/api/graph", methods=["GET"])
 def get_graph():
-    """Returns nodes, edges, hospitals, traffic levels, and starting ambulance node."""
-    hospitals = [n for n in CURRENT_NODES if n.get("type") == "hospital"]
-    ambulance_node = next((n for n in CURRENT_NODES if n.get("type") == "ambulance"), CURRENT_NODES[0])
+    """Returns nodes, edges, hospitals, traffic levels, areas, and active ambulance position."""
+    hospitals = HOSPITALS if HOSPITALS else [n for n in CURRENT_NODES if n.get("type") == "hospital"]
+    ambulance_node = CURRENT_AMBULANCE if CURRENT_AMBULANCE else next((n for n in CURRENT_NODES if n.get("type") == "ambulance"), CURRENT_NODES[0])
 
     return jsonify({
         "success": True,
+        "city": "Hyderabad",
+        "center": MAP_CENTER,
+        "default_zoom": DEFAULT_ZOOM,
         "nodes": CURRENT_NODES,
         "edges": CURRENT_EDGES,
         "hospitals": hospitals,
         "ambulance": ambulance_node,
+        "areas": HYDERABAD_AREAS,
         "traffic_levels": TRAFFIC_LEVELS
     })
+
+@app.route("/api/nearest_node", methods=["GET"])
+def find_nearest_node_api():
+    """
+    Finds nearest road node for clicked coordinates on the Hyderabad map.
+    Usage: /api/nearest_node?lat=17.44&lng=78.35
+    """
+    try:
+        lat = float(request.args.get("lat"))
+        lng = float(request.args.get("lng"))
+        node, dist = routing_engine.find_nearest_node(lat, lng)
+        if node:
+            return jsonify({
+                "success": True,
+                "node": node,
+                "distance_km": dist
+            })
+        return jsonify({"success": False, "error": "No nodes found"}), 404
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
+@app.route("/api/ambulance/location", methods=["POST"])
+def set_ambulance_location():
+    """
+    Updates the current ambulance location to a selected area, node, or coordinate.
+    Payload: { "node_id": "loc_gachibowli" } OR { "lat": 17.44, "lng": 78.35, "name": "Custom Location" }
+    """
+    global CURRENT_AMBULANCE
+    data = request.get_json(force=True, silent=True) or {}
+    node_id = data.get("node_id")
+
+    if node_id and node_id in routing_engine.nodes_dict:
+        node = routing_engine.nodes_dict[node_id]
+        CURRENT_AMBULANCE = {
+            "id": node["id"],
+            "name": node.get("name", "Ambulance Position"),
+            "lat": node["lat"],
+            "lng": node["lng"],
+            "type": "ambulance",
+            "area": node.get("area", "Hyderabad")
+        }
+        return jsonify({"success": True, "ambulance": CURRENT_AMBULANCE})
+
+    lat = data.get("lat")
+    lng = data.get("lng")
+    if lat is not None and lng is not None:
+        try:
+            lat = float(lat)
+            lng = float(lng)
+            nearest_node, dist = routing_engine.find_nearest_node(lat, lng)
+            CURRENT_AMBULANCE = {
+                "id": nearest_node["id"] if nearest_node else "amb_custom",
+                "name": data.get("name") or (f"Near {nearest_node['name']}" if nearest_node else f"Location [{lat:.4f}, {lng:.4f}]"),
+                "lat": lat,
+                "lng": lng,
+                "snapped_node_id": nearest_node["id"] if nearest_node else None,
+                "type": "ambulance",
+                "area": nearest_node.get("area", "Hyderabad") if nearest_node else "Hyderabad"
+            }
+            return jsonify({"success": True, "ambulance": CURRENT_AMBULANCE, "nearest_node": nearest_node, "distance_km": dist})
+        except Exception as e:
+            return jsonify({"success": False, "error": str(e)}), 400
+
+    return jsonify({"success": False, "error": "Provide node_id or lat/lng"}), 400
 
 @app.route("/api/routes", methods=["GET"])
 def get_routes():
     """
     Computes top K shortest paths from source to target.
     Usage: /api/routes?source=<id>&target=<id>&k=3
+    Also supports source_lat and source_lng for map click origin!
     """
-    source = request.args.get("source", "amb_station_1")
+    source = request.args.get("source")
     target = request.args.get("target")
     k = request.args.get("k", 3, type=int)
 
+    source_lat = request.args.get("source_lat", type=float)
+    source_lng = request.args.get("source_lng", type=float)
+
+    # If coordinates provided or source is not in graph, find nearest node
+    if source_lat is not None and source_lng is not None:
+        nearest_node, _ = routing_engine.find_nearest_node(source_lat, source_lng)
+        if nearest_node:
+            source = nearest_node["id"]
+
+    if not source:
+        source = CURRENT_AMBULANCE.get("id") or (DEFAULT_NODES[0]["id"] if DEFAULT_NODES else "amb_central")
+
+    # If source is an ambulance marker with custom ID, resolve to nearest node
+    if source not in routing_engine.nodes_dict:
+        if CURRENT_AMBULANCE and "lat" in CURRENT_AMBULANCE and "lng" in CURRENT_AMBULANCE:
+            nearest_node, _ = routing_engine.find_nearest_node(CURRENT_AMBULANCE["lat"], CURRENT_AMBULANCE["lng"])
+            if nearest_node:
+                source = nearest_node["id"]
+
     if not target:
-        # Default to first hospital if none specified
-        hospitals = [n for n in CURRENT_NODES if n.get("type") == "hospital"]
+        hospitals = HOSPITALS if HOSPITALS else [n for n in CURRENT_NODES if n.get("type") == "hospital"]
         if hospitals:
             target = hospitals[0]["id"]
         else:
