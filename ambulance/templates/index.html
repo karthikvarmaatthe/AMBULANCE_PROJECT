@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMART AMBULANCE – Emergency Route & Hospital Navigation</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Application Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="dashboard-page">
+
+    <!-- Emergency Mode Banner (shown when active) -->
+    <div id="emergencyBanner" class="emergency-banner" style="display: none;">
+        <div class="emergency-banner-content">
+            <span class="siren-pulse">🚨</span>
+            <span class="emergency-text">EMERGENCY MODE ACTIVE – HIGH-PRIORITY TRANSIT DISPATCH</span>
+            <span class="siren-pulse">🚨</span>
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="app-header">
+        <div class="header-brand">
+            <div class="header-logo">
+                <span class="logo-icon">🚑</span>
+            </div>
+            <div>
+                <h1 class="header-title">SMART AMBULANCE</h1>
+                <p class="header-subtitle">Intelligent Emergency Route & Hospital Management</p>
+            </div>
+        </div>
+
+        <div class="header-status-group">
+            <div id="ambulanceStatusBadge" class="status-badge status-ready">
+                <span class="status-indicator"></span>
+                <span id="ambulanceStatusText">Ambulance Ready</span>
+            </div>
+
+            <button id="emergencyModeBtn" class="btn-emergency" onclick="toggleEmergencyMode()" title="Toggle Emergency Priority Mode">
+                <span class="btn-siren">🚨</span>
+                <span id="emergencyBtnText">Emergency Mode</span>
+            </button>
+
+            <div class="user-profile">
+                <div class="user-avatar">👤</div>
+                <div class="user-info">
+                    <span class="user-name">{{ user_name }}</span>
+                    <span class="user-email">{{ user_email }}</span>
+                </div>
+                <a href="{{ url_for('logout') }}" class="btn-logout" title="Sign out">Log Out</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Global Notification Banner -->
+    <div id="notificationBar" class="notification-bar notification-info">
+        <span id="notificationIcon" class="notif-icon">ℹ️</span>
+        <span id="notificationText">Initializing road network & ambulance telemetry...</span>
+        <button class="notif-close" onclick="dismissNotification()">✕</button>
+    </div>
+
+    <!-- Main Workspace Layout -->
+    <main class="dashboard-container">
+        
+        <!-- Left Sidebar: Controls & Live Navigation Telemetry -->
+        <aside class="sidebar-panel">
+            
+            <!-- Hospital & Route Selection Card -->
+            <section class="card control-card">
+                <div class="card-header">
+                    <span class="card-icon">🏥</span>
+                    <h2>Emergency Dispatch</h2>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Starting Location Display -->
+                    <div class="form-group mb-3">
+                        <label class="field-label">Ambulance Origin Point</label>
+                        <div class="origin-badge">
+                            <span class="origin-icon">📍</span>
+                            <div class="origin-info">
+                                <strong id="startNodeName">Loading origin...</strong>
+                                <span id="startNodeCoords" class="text-muted">Fetching coordinates...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hospital Dropdown -->
+                    <div class="form-group mb-3">
+                        <label for="hospitalSelect" class="field-label">Select Destination Hospital</label>
+                        <div class="select-wrapper">
+                            <select id="hospitalSelect" class="custom-select" onchange="onHospitalChanged()">
+                                <option value="" disabled selected>Loading hospitals from network...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Selected Hospital Details Card -->
+                    <div id="hospitalInfoBox" class="hospital-preview" style="display: none;">
+                        <div class="hosp-preview-header">
+                            <strong id="hospPreviewName">Hospital Name</strong>
+                            <span class="hosp-badge">Destination</span>
+                        </div>
+                        <p id="hospPreviewDetails" class="hosp-desc">Trauma center details</p>
+                        <div class="hosp-metrics">
+                            <span>📍 <span id="hospDistanceDirect">-- km</span> direct</span>
+                            <span>🏥 <span id="hospBedsAvailable">24/7 ICU</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="button-group">
+                        <button id="findRouteBtn" class="btn-primary" onclick="findBestRoute()">
+                            <span class="btn-icon">⚡</span>
+                            <span>Find Best Route</span>
+                        </button>
+                        
+                        <button id="resetRouteBtn" class="btn-secondary" onclick="resetRouteAndNavigation()">
+                            <span class="btn-icon">🔄</span>
+                            <span>Reset Route</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Live ETA & Distance Telemetry Card -->
+            <section id="etaContainer" class="card eta-card">
+                <div class="card-header">
+                    <span class="card-icon">⏱️</span>
+                    <h2>Live Transit Telemetry</h2>
+                    <span id="routeTagBadge" class="route-tag-pill">No Active Route</span>
+                </div>
+
+                <div class="card-body">
+                    <div class="telemetry-grid">
+                        <div class="telemetry-box primary-eta">
+                            <span class="telemetry-label">Estimated Time (ETA)</span>
+                            <div class="telemetry-value-wrap">
+                                <span id="etaValue" class="telemetry-value">--</span>
+                                <span class="telemetry-unit">min</span>
+                            </div>
+                            <span id="etaTrafficDiff" class="telemetry-sub">Based on traffic</span>
+                        </div>
+
+                        <div class="telemetry-box">
+                            <span class="telemetry-label">Remaining Distance</span>
+                            <div class="telemetry-value-wrap">
+                                <span id="etaDistance" class="telemetry-value">--</span>
+                                <span class="telemetry-unit">km</span>
+                            </div>
+                            <span class="telemetry-sub">Total: <span id="totalDistanceVal">--</span> km</span>
+                        </div>
+
+                        <div class="telemetry-box">
+                            <span class="telemetry-label">Expected Arrival</span>
+                            <div class="telemetry-value-wrap">
+                                <span id="etaArrival" class="telemetry-value arrival-clock">--:--</span>
+                            </div>
+                            <span id="arrivalOffset" class="telemetry-sub">Local Time</span>
+                        </div>
+
+                        <div class="telemetry-box">
+                            <span class="telemetry-label">Transit Status</span>
+                            <div class="telemetry-value-wrap">
+                                <span id="transitStatusText" class="telemetry-value status-small">Standby</span>
+                            </div>
+                            <span id="transitSpeed" class="telemetry-sub">Speed: 45 km/h avg</span>
+                        </div>
+                    </div>
+
+                    <!-- Live Progress Bar -->
+                    <div class="progress-section">
+                        <div class="progress-labels">
+                            <span>Route Progress</span>
+                            <span id="progressPercentage" class="progress-pct">0%</span>
+                        </div>
+                        <div class="progress-track">
+                            <div id="progressBarFill" class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                        <div class="progress-nodes-info">
+                            <span id="progressCurrentNode">Depot: Standby</span>
+                            <span id="progressNextNode">Target: Hospital</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Multiple Routes Selection Card (K-Shortest) -->
+            <section id="routesListCard" class="card routes-card" style="display: none;">
+                <div class="card-header">
+                    <span class="card-icon">🔀</span>
+                    <h2>Alternative Routes (K-Shortest)</h2>
+                </div>
+                <div class="card-body">
+                    <div id="routeOptionsList" class="route-options-list">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Navigation Directions Panel (Turn-by-Turn) -->
+            <section id="directionsContainer" class="card directions-card">
+                <div class="card-header">
+                    <span class="card-icon">🧭</span>
+                    <h2>Turn-by-Turn Navigation</h2>
+                    <span id="directionsStepCount" class="step-count-badge">0 steps</span>
+                </div>
+                <div class="card-body">
+                    <div id="directionsList" class="directions-list">
+                        <div class="empty-directions-notice">
+                            <span class="empty-icon">📍</span>
+                            <p>Select a hospital and click <strong>"Find Best Route"</strong> to generate step-by-step navigation instructions.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Real-Time Traffic Management Card -->
+            <section class="card traffic-card">
+                <div class="card-header">
+                    <span class="card-icon">🚦</span>
+                    <h2>Traffic Control & Simulation</h2>
+                </div>
+                <div class="card-body">
+                    <p class="section-desc">Simulate live city congestion to evaluate intelligent dynamic rerouting:</p>
+
+                    <div class="form-group mb-2">
+                        <label for="trafficRoadSelect" class="field-label-sm">Select Road Segment</label>
+                        <select id="trafficRoadSelect" class="custom-select custom-select-sm">
+                            <option value="">Choose road to congest...</option>
+                        </select>
+                    </div>
+
+                    <div class="traffic-btn-row">
+                        <button type="button" class="btn-traffic btn-tr-clear" onclick="setTrafficLevel('clear')">🟢 Clear</button>
+                        <button type="button" class="btn-traffic btn-tr-moderate" onclick="setTrafficLevel('moderate')">🟡 Moderate</button>
+                        <button type="button" class="btn-traffic btn-tr-heavy" onclick="setTrafficLevel('heavy')">🔴 Heavy</button>
+                        <button type="button" class="btn-traffic btn-tr-severe" onclick="setTrafficLevel('severe')">🟣 Severe</button>
+                    </div>
+
+                    <button class="btn-reset-traffic" onclick="resetAllTraffic()">
+                        <span>↺ Reset All Roads to Normal</span>
+                    </button>
+                </div>
+            </section>
+
+        </aside>
+
+        <!-- Right / Main Area: Interactive Map Canvas -->
+        <section class="map-section">
+            <div class="map-wrapper">
+                
+                <!-- Leaflet Map Container -->
+                <div id="map" class="map-canvas"></div>
+
+                <!-- Initial Graph Loading State Overlay -->
+                <div id="mapLoadingOverlay" class="map-loading-overlay">
+                    <div class="loading-card">
+                        <div class="loading-spinner"></div>
+                        <h3 id="loadingStatusText">Loading city road network & ambulance telemetry...</h3>
+                        <p class="loading-sub">Connecting to Dijkstra routing backend and spatial coordinates...</p>
+                    </div>
+                </div>
+
+                <!-- Floating Arrival Announcement Overlay -->
+                <div id="arrivalOverlay" class="arrival-overlay" style="display: none;">
+                    <div class="arrival-modal">
+                        <div class="arrival-badge-icon">🏥✨</div>
+                        <h2 class="arrival-title">AMBULANCE ARRIVED!</h2>
+                        <p id="arrivalHospitalName" class="arrival-hospital">Reached Apex Trauma & Multispecialty Hospital</p>
+                        <div class="arrival-stats">
+                            <div class="arr-stat">
+                                <span class="stat-label">Total Distance</span>
+                                <strong id="arrDist">5.2 km</strong>
+                            </div>
+                            <div class="arr-stat">
+                                <span class="stat-label">Transit Time</span>
+                                <strong id="arrTime">9.8 min</strong>
+                            </div>
+                            <div class="arr-stat">
+                                <span class="stat-label">Status</span>
+                                <strong class="text-green">Emergency Patient Handover</strong>
+                            </div>
+                        </div>
+                        <button class="btn-primary mt-3" onclick="dismissArrivalModal()">Acknowledge & Ready Next Dispatch</button>
+                    </div>
+                </div>
+
+                <!-- Map Controls & Legend Overlay -->
+                <div class="map-legend">
+                    <div class="legend-title">System Legend</div>
+                    <div class="legend-grid">
+                        <div class="legend-item"><span class="legend-symbol">🚑</span> Ambulance Location</div>
+                        <div class="legend-item"><span class="legend-symbol">🏥</span> Destination Hospital</div>
+                        <div class="legend-item"><span class="legend-symbol">⚪</span> Road Network Node</div>
+                        <div class="legend-item"><span class="legend-color-line line-active"></span> Active Best Route</div>
+                        <div class="legend-item"><span class="legend-color-line line-clear"></span> Clear Road (1.0x)</div>
+                        <div class="legend-item"><span class="legend-color-line line-moderate"></span> Moderate Traffic (1.6x)</div>
+                        <div class="legend-item"><span class="legend-color-line line-heavy"></span> Heavy Congestion (2.2x)</div>
+                        <div class="legend-item"><span class="legend-color-line line-severe"></span> Severe Gridlock (3.2x)</div>
+                    </div>
+                </div>
+
+                <!-- Live Transit Bar on Map Bottom -->
+                <div id="mapTransitOverlay" class="map-transit-overlay" style="display: none;">
+                    <div class="mto-left">
+                        <span class="mto-siren">🚑</span>
+                        <div>
+                            <strong id="mtoNextAction">En Route to Hospital</strong>
+                            <span id="mtoSubText">Navigation actively progressing...</span>
+                        </div>
+                    </div>
+                    <div class="mto-right">
+                        <div class="mto-stat">
+                            <span class="stat-caption">Remaining</span>
+                            <span id="mtoRemainingVal" class="stat-bold">-- min</span>
+                        </div>
+                        <div class="mto-stat">
+                            <span class="stat-caption">Distance</span>
+                            <span id="mtoDistVal" class="stat-bold">-- km</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Leaflet JS Library -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Application Script (ONLY ONE SCRIPT, ZERO DUPLICATIONS) -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

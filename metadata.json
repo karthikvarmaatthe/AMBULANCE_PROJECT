@@ -1,0 +1,6 @@
+{
+  "name": "Smart Ambulance",
+  "description": "Intelligent Emergency Route & Hospital Management System with Dijkstra routing, real-time traffic, and navigation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

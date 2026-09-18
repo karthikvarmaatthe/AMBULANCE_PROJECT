@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paramedic Login | Smart Ambulance Emergency System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="auth-page">
+    <div class="auth-card">
+        <div class="brand-header">
+            <div class="brand-icon-wrapper">
+                <span class="brand-emoji">🚑</span>
+            </div>
+            <div class="badge-emergency">CRITICAL EMERGENCY DISPATCH</div>
+            <h1 class="brand-title">SMART AMBULANCE</h1>
+            <p class="brand-subtitle">Intelligent Emergency Route & Hospital Management System</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-container">
+                    {% for category, message in messages %}
+                        <div class="flash-alert flash-{{ category }}">
+                            <span class="flash-icon">
+                                {% if category == 'success' %}✓{% elif category == 'danger' %}⚠️{% else %}ℹ️{% endif %}
+                            </span>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('login') }}" class="auth-form">
+            <div class="form-group">
+                <label for="email">Responder Email</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">✉️</span>
+                    <input type="email" id="email" name="email" placeholder="paramedic@emergency.org" required autofocus>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" id="password" name="password" placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary btn-block">
+                <span>Access Emergency Dispatch</span>
+                <span class="btn-arrow">→</span>
+            </button>
+        </form>
+
+        <div class="demo-box" onclick="fillDemoCredentials()">
+            <div class="demo-box-header">
+                <span class="demo-tag">Quick Demo Fill</span>
+                <span class="demo-action">Click to Autofill</span>
+            </div>
+            <div class="demo-creds">
+                <span><strong>Email:</strong> paramedic@emergency.org</span>
+                <span><strong>Password:</strong> Password123</span>
+            </div>
+        </div>
+
+        <div class="auth-footer">
+            <p>New paramedic or dispatcher? <a href="{{ url_for('register') }}">Create an account</a></p>
+        </div>
+    </div>
+
+    <script>
+        function fillDemoCredentials() {
+            document.getElementById('email').value = 'paramedic@emergency.org';
+            document.getElementById('password').value = 'Password123';
+        }
+    </script>
+</body>
+</html>
