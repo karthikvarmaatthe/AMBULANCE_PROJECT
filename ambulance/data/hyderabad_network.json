@@ -2670,5 +2670,631 @@
     "moderate",
     "heavy",
     "severe"
+  ],
+  "areas": [
+    {
+      "id": "loc_abids",
+      "area": "Abids",
+      "name": "Abids GPO Circle",
+      "lat": 17.392,
+      "lng": 78.478,
+      "details": "Historic Central Business District"
+    },
+    {
+      "id": "loc_afzalgunj",
+      "area": "Afzal Gunj",
+      "name": "Afzal Gunj Nayapul Bridge",
+      "lat": 17.375,
+      "lng": 78.479,
+      "details": "Osmania General Hospital Main Approach"
+    },
+    {
+      "id": "loc_amberpet",
+      "area": "Amberpet",
+      "name": "Amberpet Ali Cafe X Roads",
+      "lat": 17.388,
+      "lng": 78.514,
+      "details": "Central-East Connector Road"
+    },
+    {
+      "id": "loc_ameerpet",
+      "area": "Ameerpet",
+      "name": "Ameerpet Metro Interchange",
+      "lat": 17.4375,
+      "lng": 78.4483,
+      "details": "Major Twin-Line Transit Hub"
+    },
+    {
+      "id": "loc_aramghar",
+      "area": "Aramghar",
+      "name": "Aramghar Junction",
+      "lat": 17.321,
+      "lng": 78.434,
+      "details": "NH-44 & PVNR Expressway South Terminal"
+    },
+    {
+      "id": "loc_attapur",
+      "area": "Attapur",
+      "name": "Attapur Pillar 143",
+      "lat": 17.368,
+      "lng": 78.438,
+      "details": "PVNR Expressway & Hyderguda Link"
+    },
+    {
+      "id": "loc_bachupally",
+      "area": "Bachupally",
+      "name": "Bachupally X Roads",
+      "lat": 17.527,
+      "lng": 78.368,
+      "details": "Nizampet-Bachupally Medical Corridor"
+    },
+    {
+      "id": "loc_balanagar",
+      "area": "Balanagar",
+      "name": "Balanagar Cross Roads",
+      "lat": 17.472,
+      "lng": 78.448,
+      "details": "Industrial Area Main Interchange"
+    },
+    {
+      "id": "loc_banjara_hills",
+      "area": "Banjara Hills",
+      "name": "Banjara Hills Road No. 1",
+      "lat": 17.4156,
+      "lng": 78.4352,
+      "details": "Taj Krishna & Healthcare Corridor"
+    },
+    {
+      "id": "loc_begumpet",
+      "area": "Begumpet",
+      "name": "Begumpet Flyover",
+      "lat": 17.444,
+      "lng": 78.474,
+      "details": "Old Airport Road & Lifestyle Building"
+    },
+    {
+      "id": "orr_bongloor",
+      "area": "Bongloor",
+      "name": "ORR Exit 12 - Bongloor",
+      "lat": 17.275,
+      "lng": 78.548,
+      "details": "Outer Ring Road Nagarjuna Sagar Highway Exit"
+    },
+    {
+      "id": "loc_bowenpally",
+      "area": "Bowenpally",
+      "name": "Bowenpally Checkpost",
+      "lat": 17.478,
+      "lng": 78.485,
+      "details": "NH-44 Nagpur Highway Starting Point"
+    },
+    {
+      "id": "loc_chandrayangutta",
+      "area": "Chandrayangutta",
+      "name": "Chandrayangutta X Roads",
+      "lat": 17.329,
+      "lng": 78.489,
+      "details": "Inner Ring Road South Sector"
+    },
+    {
+      "id": "loc_charminar",
+      "area": "Charminar",
+      "name": "Charminar Historic Plaza",
+      "lat": 17.3616,
+      "lng": 78.4747,
+      "details": "Old City Center & Mecca Masjid"
+    },
+    {
+      "id": "loc_chikkadpally",
+      "area": "Chikkadpally",
+      "name": "RTC X Roads Chikkadpally",
+      "lat": 17.404,
+      "lng": 78.498,
+      "details": "Theatres Hub & Indira Park Link"
+    },
+    {
+      "id": "loc_dilsukhnagar",
+      "area": "Dilsukhnagar",
+      "name": "Dilsukhnagar Bus Depot",
+      "lat": 17.3688,
+      "lng": 78.5247,
+      "details": "Metro Station & High Density Commercial Street"
+    },
+    {
+      "id": "orr_dundigal",
+      "area": "Dundigal",
+      "name": "ORR Exit 5 - Dundigal / Bachupally",
+      "lat": 17.552,
+      "lng": 78.388,
+      "details": "Outer Ring Road Mallampet & Bachupally Exit"
+    },
+    {
+      "id": "loc_ecil",
+      "area": "ECIL",
+      "name": "ECIL Cross Roads",
+      "lat": 17.468,
+      "lng": 78.568,
+      "details": "Radhika Theatre & Electronics Complex"
+    },
+    {
+      "id": "loc_erragadda",
+      "area": "Erragadda",
+      "name": "Erragadda ESI Metro",
+      "lat": 17.453,
+      "lng": 78.439,
+      "details": "ESI Hospital & Sanath Nagar Link"
+    },
+    {
+      "id": "loc_falaknuma",
+      "area": "Falaknuma",
+      "name": "Falaknuma Palace Gate",
+      "lat": 17.332,
+      "lng": 78.468,
+      "details": "Engine Bowli & South City Link"
+    },
+    {
+      "id": "loc_film_nagar",
+      "area": "Film Nagar",
+      "name": "Film Nagar Cultural Center",
+      "lat": 17.412,
+      "lng": 78.406,
+      "details": "Apollo Hospital South Approach"
+    },
+    {
+      "id": "loc_financial_dist",
+      "area": "Financial District",
+      "name": "Financial District",
+      "lat": 17.418,
+      "lng": 78.342,
+      "details": "WaveRock & IT SEZ Hub"
+    },
+    {
+      "id": "loc_gachibowli",
+      "area": "Gachibowli",
+      "name": "Gachibowli Junction",
+      "lat": 17.4399,
+      "lng": 78.3614,
+      "details": "Bio-Diversity & Outer Ring Road Interchange"
+    },
+    {
+      "id": "orr_ghatkesar",
+      "area": "Ghatkesar",
+      "name": "ORR Exit 9 - Ghatkesar / Medipally",
+      "lat": 17.428,
+      "lng": 78.632,
+      "details": "Outer Ring Road Warangal Highway Exit"
+    },
+    {
+      "id": "loc_habsiguda",
+      "area": "Habsiguda",
+      "name": "Habsiguda Street No. 8",
+      "lat": 17.415,
+      "lng": 78.555,
+      "details": "CCMB & NGRI Research Institute Link"
+    },
+    {
+      "id": "loc_hayathnagar",
+      "area": "Hayathnagar",
+      "name": "Hayathnagar RTC Depot",
+      "lat": 17.324,
+      "lng": 78.608,
+      "details": "NH-65 Vijayawada Highway Exit"
+    },
+    {
+      "id": "loc_highcourt",
+      "area": "High Court",
+      "name": "High Court City College",
+      "lat": 17.368,
+      "lng": 78.471,
+      "details": "Musi River South Bank"
+    },
+    {
+      "id": "loc_hitech_city",
+      "area": "Hitech City",
+      "name": "Hitech City Cyber Towers",
+      "lat": 17.4504,
+      "lng": 78.3808,
+      "details": "Cyber Towers Core Intersection"
+    },
+    {
+      "id": "loc_jeedimetla",
+      "area": "Jeedimetla",
+      "name": "Jeedimetla Industrial Area",
+      "lat": 17.509,
+      "lng": 78.455,
+      "details": "Subhash Nagar & Shapoor Nagar Link"
+    },
+    {
+      "id": "loc_jubilee_hills",
+      "area": "Jubilee Hills",
+      "name": "Jubilee Hills Checkpost",
+      "lat": 17.43,
+      "lng": 78.411,
+      "details": "Peddamma Temple & Road 36 Interchange"
+    },
+    {
+      "id": "loc_kavadiguda",
+      "area": "Kavadiguda",
+      "name": "Kavadiguda Lower Tank Bund",
+      "lat": 17.416,
+      "lng": 78.49,
+      "details": "CBR & Secretariat North Gate"
+    },
+    {
+      "id": "orr_keesara",
+      "area": "Keesara",
+      "name": "ORR Exit 8 - Keesara",
+      "lat": 17.512,
+      "lng": 78.605,
+      "details": "Outer Ring Road North-East Corridor"
+    },
+    {
+      "id": "loc_khairatabad",
+      "area": "Khairatabad",
+      "name": "Khairatabad RTA Circle",
+      "lat": 17.4116,
+      "lng": 78.4612,
+      "details": "Lake Perimeter & Flyover"
+    },
+    {
+      "id": "loc_kompally",
+      "area": "Kompally",
+      "name": "Kompally Cineplanet",
+      "lat": 17.538,
+      "lng": 78.487,
+      "details": "North Hyderabad Highway Gateway"
+    },
+    {
+      "id": "loc_kondapur",
+      "area": "Kondapur",
+      "name": "Kondapur Kothaguda Junction",
+      "lat": 17.461,
+      "lng": 78.367,
+      "details": "Botanical Garden & HITEC-Kondapur Junction"
+    },
+    {
+      "id": "loc_kothapet",
+      "area": "Kothapet",
+      "name": "Kothapet Fruit Market",
+      "lat": 17.361,
+      "lng": 78.542,
+      "details": "Chaitanyapuri & Omni Hospital Cross"
+    },
+    {
+      "id": "loc_koti",
+      "area": "Koti",
+      "name": "Koti Women's College X Roads",
+      "lat": 17.385,
+      "lng": 78.4867,
+      "details": "Sultan Bazaar & Medical Row"
+    },
+    {
+      "id": "loc_kukatpally",
+      "area": "Kukatpally",
+      "name": "Kukatpally KPHB Colony",
+      "lat": 17.4947,
+      "lng": 78.3912,
+      "details": "JNTU & KPHB Metro Arterial"
+    },
+    {
+      "id": "loc_lbnagar",
+      "area": "LB Nagar",
+      "name": "LB Nagar Ring Road Junction",
+      "lat": 17.348,
+      "lng": 78.552,
+      "details": "Inner Ring Road & NH-65 Southern Gateway"
+    },
+    {
+      "id": "loc_lakdikapul",
+      "area": "Lakdikapul",
+      "name": "Lakdikapul Metro Junction",
+      "lat": 17.4045,
+      "lng": 78.464,
+      "details": "Collectorate & Assembly Corridor"
+    },
+    {
+      "id": "loc_madhapur",
+      "area": "Madhapur",
+      "name": "Madhapur Mindspace",
+      "lat": 17.4334,
+      "lng": 78.3866,
+      "details": "Mindspace IT Park & Inorbit Mall Corridor"
+    },
+    {
+      "id": "loc_malakpet",
+      "area": "Malakpet",
+      "name": "Malakpet Super Bazaar",
+      "lat": 17.375,
+      "lng": 78.502,
+      "details": "NH-65 & Yashoda Malakpet Link"
+    },
+    {
+      "id": "loc_malkajgiri",
+      "area": "Malkajgiri",
+      "name": "Malkajgiri Anandbagh",
+      "lat": 17.452,
+      "lng": 78.535,
+      "details": "Malkajgiri Station & Vani Nagar Link"
+    },
+    {
+      "id": "loc_marredpally",
+      "area": "Marredpally",
+      "name": "Marredpally East",
+      "lat": 17.452,
+      "lng": 78.512,
+      "details": "Cantonment High-Speed Arterial"
+    },
+    {
+      "id": "orr_medchal",
+      "area": "Medchal",
+      "name": "ORR Exit 6 - Medchal / Kandlakoya",
+      "lat": 17.585,
+      "lng": 78.489,
+      "details": "Outer Ring Road NH-44 North Toll Plaza"
+    },
+    {
+      "id": "loc_mehdipatnam",
+      "area": "Mehdipatnam",
+      "name": "Mehdipatnam Rethi Bowli",
+      "lat": 17.392,
+      "lng": 78.441,
+      "details": "Bus Terminal & PVNR Expressway Entry"
+    },
+    {
+      "id": "loc_mettuguda",
+      "area": "Mettuguda",
+      "name": "Mettuguda Metro Rail Nilayam",
+      "lat": 17.438,
+      "lng": 78.523,
+      "details": "South Central Railway HQ"
+    },
+    {
+      "id": "loc_miyapur",
+      "area": "Miyapur",
+      "name": "Miyapur Allwyn X Roads",
+      "lat": 17.4968,
+      "lng": 78.3546,
+      "details": "Miyapur Metro Terminal & NH-65 Junction"
+    },
+    {
+      "id": "loc_moosapet",
+      "area": "Moosapet",
+      "name": "Moosapet Metro Junction",
+      "lat": 17.464,
+      "lng": 78.432,
+      "details": "NH-65 Commercial Corridor"
+    },
+    {
+      "id": "loc_moula_ali",
+      "area": "Moula Ali",
+      "name": "Moula Ali Kaman",
+      "lat": 17.458,
+      "lng": 78.56,
+      "details": "Railway Goods Shed & Dargah"
+    },
+    {
+      "id": "loc_musheerabad",
+      "area": "Musheerabad",
+      "name": "Musheerabad Gandhi Gate",
+      "lat": 17.424,
+      "lng": 78.503,
+      "details": "Gandhi Medical College & Hospital Entry"
+    },
+    {
+      "id": "loc_nacharam",
+      "area": "Nacharam",
+      "name": "Nacharam Industrial Area",
+      "lat": 17.436,
+      "lng": 78.573,
+      "details": "Mallapur & HMT Nagar Link"
+    },
+    {
+      "id": "loc_nagole",
+      "area": "Nagole",
+      "name": "Nagole Metro Station",
+      "lat": 17.375,
+      "lng": 78.56,
+      "details": "Inner Ring Road & Musi River Bridge"
+    },
+    {
+      "id": "loc_nallagandla",
+      "area": "Nallagandla",
+      "name": "Nallagandla Flyover",
+      "lat": 17.472,
+      "lng": 78.307,
+      "details": "Tellapur & BHEL Corridor"
+    },
+    {
+      "id": "loc_nampally",
+      "area": "Nampally",
+      "name": "Nampally Station Road",
+      "lat": 17.3916,
+      "lng": 78.472,
+      "details": "Railway Station & Exhibition Grounds"
+    },
+    {
+      "id": "loc_neredmet",
+      "area": "Neredmet",
+      "name": "Neredmet Cross Roads",
+      "lat": 17.481,
+      "lng": 78.538,
+      "details": "Safilguda Lake & Ramakrishnapuram Link"
+    },
+    {
+      "id": "loc_osmania_univ",
+      "area": "Osmania University",
+      "name": "Osmania University Campus",
+      "lat": 17.412,
+      "lng": 78.528,
+      "details": "Arts College & Vidyanagar Link"
+    },
+    {
+      "id": "loc_paradise",
+      "area": "Paradise",
+      "name": "Paradise Circle",
+      "lat": 17.4425,
+      "lng": 78.487,
+      "details": "MG Road & Sardar Patel Road Hub"
+    },
+    {
+      "id": "orr_patancheru",
+      "area": "Patancheru",
+      "name": "ORR Exit 3 - Patancheru",
+      "lat": 17.515,
+      "lng": 78.268,
+      "details": "Outer Ring Road NH-65 Mumbai Tollway"
+    },
+    {
+      "id": "orr_pedda_amberpet",
+      "area": "Pedda Amberpet",
+      "name": "ORR Exit 11 - Pedda Amberpet",
+      "lat": 17.322,
+      "lng": 78.618,
+      "details": "Outer Ring Road NH-65 Vijayawada Exit"
+    },
+    {
+      "id": "loc_punjagutta",
+      "area": "Punjagutta",
+      "name": "Punjagutta Center",
+      "lat": 17.426,
+      "lng": 78.453,
+      "details": "Nagarjuna Circle & Central Mall Flyover"
+    },
+    {
+      "id": "loc_raidurgam",
+      "area": "Raidurgam",
+      "name": "Raidurgam Knowledge City",
+      "lat": 17.425,
+      "lng": 78.377,
+      "details": "T-Hub, IKEA & Durgam Cheruvu Cable Bridge"
+    },
+    {
+      "id": "loc_rajendranagar",
+      "area": "Rajendranagar",
+      "name": "Rajendranagar Agriculture Campus",
+      "lat": 17.319,
+      "lng": 78.41,
+      "details": "Outer Ring Road South Connector"
+    },
+    {
+      "id": "loc_ramanthapur",
+      "area": "Ramanthapur",
+      "name": "Ramanthapur Polytechnic",
+      "lat": 17.392,
+      "lng": 78.541,
+      "details": "TV Studio & Amberpet Link Road"
+    },
+    {
+      "id": "loc_sr_nagar",
+      "area": "SR Nagar",
+      "name": "SR Nagar Junction",
+      "lat": 17.444,
+      "lng": 78.443,
+      "details": "Commercial Arterial Corridor"
+    },
+    {
+      "id": "loc_sainikpuri",
+      "area": "Sainikpuri",
+      "name": "Sainikpuri Cross Roads",
+      "lat": 17.491,
+      "lng": 78.555,
+      "details": "Defence Colony & Yapral Corridor"
+    },
+    {
+      "id": "loc_santoshnagar",
+      "area": "Santoshnagar",
+      "name": "Santoshnagar DRDO Junction",
+      "lat": 17.348,
+      "lng": 78.508,
+      "details": "Defence Laboratories Corridor"
+    },
+    {
+      "id": "loc_secunderabad",
+      "area": "Secunderabad",
+      "name": "Secunderabad Clock Tower",
+      "lat": 17.4399,
+      "lng": 78.502,
+      "details": "Secunderabad Railway Station Gateway"
+    },
+    {
+      "id": "loc_shaikpet",
+      "area": "Shaikpet",
+      "name": "Shaikpet Dargah Flyover",
+      "lat": 17.408,
+      "lng": 78.388,
+      "details": "Seven Tombs & Gachibowli Flyover"
+    },
+    {
+      "id": "loc_shamshabad",
+      "area": "Shamshabad",
+      "name": "Shamshabad Airport Interchange",
+      "lat": 17.245,
+      "lng": 78.432,
+      "details": "Rajiv Gandhi International Airport (RGIA) Gateway"
+    },
+    {
+      "id": "loc_somajiguda",
+      "area": "Somajiguda",
+      "name": "Somajiguda Raj Bhavan Road",
+      "lat": 17.421,
+      "lng": 78.458,
+      "details": "Governor Residence & Healthcare Row"
+    },
+    {
+      "id": "loc_suchitra",
+      "area": "Suchitra",
+      "name": "Suchitra Circle",
+      "lat": 17.512,
+      "lng": 78.488,
+      "details": "Quthbullapur & NH-44 Crossing"
+    },
+    {
+      "id": "loc_tankbund",
+      "area": "Tank Bund",
+      "name": "Tank Bund PVNR Marg",
+      "lat": 17.411,
+      "lng": 78.476,
+      "details": "Hussain Sagar Lake Driveway"
+    },
+    {
+      "id": "loc_tarnaka",
+      "area": "Tarnaka",
+      "name": "Tarnaka Flyover Junction",
+      "lat": 17.428,
+      "lng": 78.538,
+      "details": "Nagarjuna Sagar & University Entrance"
+    },
+    {
+      "id": "orr_tellapur",
+      "area": "Tellapur",
+      "name": "ORR Exit 2B - Tellapur / Kollur",
+      "lat": 17.475,
+      "lng": 78.291,
+      "details": "Outer Ring Road West Tech Residential Hub"
+    },
+    {
+      "id": "loc_tolichowki",
+      "area": "Tolichowki",
+      "name": "Tolichowki Flyover",
+      "lat": 17.399,
+      "lng": 78.412,
+      "details": "Golconda & Shaikpet Transit Link"
+    },
+    {
+      "id": "loc_uppal",
+      "area": "Uppal",
+      "name": "Uppal Cross Roads",
+      "lat": 17.402,
+      "lng": 78.56,
+      "details": "Rajiv Gandhi Stadium & Warangal Highway Entry"
+    },
+    {
+      "id": "loc_vanasthalipuram",
+      "area": "Vanasthalipuram",
+      "name": "Vanasthalipuram Complex",
+      "lat": 17.336,
+      "lng": 78.572,
+      "details": "Sushma Cross Roads"
+    }
   ]
 }

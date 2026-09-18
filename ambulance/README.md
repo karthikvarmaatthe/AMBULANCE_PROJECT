@@ -6,7 +6,7 @@ A full-stack emergency medical dispatch and intelligent navigation application t
 
 ## Tech Stack
 - **Frontend**: HTML5, Modern CSS3 (High-contrast Medical Dark Theme), Vanilla JavaScript (Single IIFE, zero duplication)
-- **Map Engine**: Leaflet.js with CartoDB Dark Matter & OpenStreetMap tiles
+- **Map Engine**: Leaflet.js with OpenStreetMap standard tiles (zero API keys or watermarks)
 - **Backend**: Python Flask REST APIs
 - **Database**: SQLite (`ambulance.db`) with Werkzeug password hashing
 - **Routing Algorithm**: Graph-based Dijkstra + Yen's K-Shortest Loopless Paths with dynamic traffic congestion multipliers
